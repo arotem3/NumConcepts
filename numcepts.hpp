@@ -11,7 +11,7 @@ namespace numcepts
   struct is_real : std::false_type {};
 
   template <std::floating_point T>
-  struct is_real : std::true_type {};
+  struct is_real<T> : std::true_type {};
 
   template <typename T>
   inline constexpr bool is_real_v = is_real<T>::value;
@@ -58,39 +58,35 @@ namespace numcepts
     using type = T;
   };
 
-  template <ScalarType T>
+  template <typename T>
   using precision_t = get_precision<T>::type;
 
   template <typename T>
   concept ArithmeticType = std::is_arithmetic_v<T>;
 
-  /**
-   * @brief Vector type supporting scalar multiplication by real numbers.
-   */
   template <typename T>
-  concept RealVectorType = requires(T a, T b, RealType auto d) {
-      // The type should be default-constructible
-      { T() } -> std::same_as<T>;
+  struct get_value_type
+  {
+    using type = typename T::value_type;
+  };
 
-      // It should support addition
-      { a + b } -> std::same_as<T>;
+  template <typename T>
+  using value_t = get_value_type<T>::type;
 
-      // It should support scalar multiplication with any real type
-      { d * a } -> std::same_as<T>;
+  template <std::ranges::range T>
+  struct get_precision<T>
+  {
+    using type = get_precision<value_t<T>>::type;
   };
 
   /**
-   * @brief Vector type supporting scalar multiplication by complex numbers.
-   * 
-   * Note any VectorType is a RealVectorType.
+   * @brief Vector type.
    */
   template <typename T>
-  concept VectorType = requires(T a, T b, ScalarType auto d) {
-    { T() } -> std::same_as<T>;
-
-    { a + b } -> std::same_as<T>;
-
-    { d * a } -> std::same_as<T>;
+  concept VectorType = requires(T a, T b, precision_t<T> c, value_t<T> d) {
+    { a + b } -> std::convertible_to<T>; // It should support addition
+    { c * a } -> std::convertible_to<T>; // It should support scalar multiplication with a real type
+    { d * a } -> std::convertible_to<T>; // It should support scalar multiplication with a scalar type
   };
 } // namespace numcepts
 
