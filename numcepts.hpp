@@ -14,6 +14,15 @@ namespace numcepts
   struct is_real<T> : std::true_type {};
 
   template <typename T>
+  struct is_real<const T> : is_real<T> {};
+
+  template <typename T>
+  struct is_real<T &> : is_real<T> {};
+
+  template <typename T>
+  struct is_real<T &&> : is_real<T> {};
+
+  template <typename T>
   inline constexpr bool is_real_v = is_real<T>::value;
 
   /**
@@ -27,6 +36,15 @@ namespace numcepts
 
   template <RealType T>
   struct is_complex<std::complex<T>> : std::true_type {};
+
+  template <typename T>
+  struct is_complex<const T> : is_complex<T> {};
+
+  template <typename T>
+  struct is_complex<T &> : is_complex<T> {};
+
+  template <typename T>
+  struct is_complex<T &&> : is_complex<T> {};
 
   template <typename T>
   inline constexpr bool is_complex_v = is_complex<T>::value;
@@ -59,6 +77,15 @@ namespace numcepts
   };
 
   template <typename T>
+  struct get_precision<const T> : get_precision<T> {};
+
+  template <typename T>
+  struct get_precision<T &> : get_precision<T> {};
+
+  template <typename T>
+  struct get_precision<T &&> : get_precision<T> {};
+
+  template <typename T>
   using precision_t = get_precision<T>::type;
 
   template <typename T>
@@ -85,8 +112,8 @@ namespace numcepts
   template <typename T>
   concept VectorType = requires(T a, T b, precision_t<T> c, value_t<T> d) {
     { a + b } -> std::convertible_to<T>; // It should support addition
-    { c * a } -> std::convertible_to<T>; // It should support scalar multiplication with a real type
-    { d * a } -> std::convertible_to<T>; // It should support scalar multiplication with a scalar type
+    { c * a } -> std::convertible_to<T>;  // It should support scalar multiplication with a real type
+    { d * a } -> std::convertible_to<T>;  // It should support scalar multiplication with a scalar type
   };
 } // namespace numcepts
 
